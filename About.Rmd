@@ -32,6 +32,7 @@ editor_options:
     <h1 class='h-title'> Sports Analytics SIG </h1>
   </section>
 
+<!--
   <section>
   
 > **About myself** 
@@ -47,6 +48,7 @@ editor_options:
     </ul>
 <hr>
   </section>
+-->  
 
   <section>
   
@@ -158,7 +160,8 @@ head(a_to_ratio[,c(2,20,23,28)])
 ```
 <hr>
 
-### Building a Random Forest to classify playoff teams
+### Using different Machine Learning Techniques to classify playoff teams
+#### Building a Random Forest to classify playoff teams
 ```{r, warning=FALSE, message=FALSE}
 library(tree)
 
@@ -169,8 +172,18 @@ summary(playoff.tree)
 plot(playoff.tree)
 text(playoff.tree, pretty = 0)
 ```
+<hr>
 
+#### Building a Support Vector Machine to classify playoff teams
+```{r, warning=FALSE, message=FALSE}
+library(e1071)
 
+svm.data <- select(num.data, Playoff, twoPPCT, TOV) %>% filter() 
+playoff.svm = svm(as.factor(Playoff) ∼., svm.data, kernel ="linear", cost=10,
+scale=FALSE)
+plot(playoff.svm, svm.data)
+summary(playoff.svm)
+```
   </section>
   
   <section>
