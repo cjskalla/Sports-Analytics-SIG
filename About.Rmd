@@ -80,7 +80,7 @@
 ```{r, warning=FALSE, message=FALSE}
 #Reading in data downloaded onto your local drive
 #This code will not work unless you place the comma separated file within the same folder as this about.rmd is in
-data <- read.csv("Basketball Analytics/playoffs.csv")
+data <- read.csv("Basketball Data/playoffs.csv")
 head(data)
 ```
 <hr>
