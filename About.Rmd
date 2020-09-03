@@ -97,9 +97,10 @@ colnames(data)
 
 #Replace Column names with easier keys
 colnames(data) <- c("Rank", "Team", "G", "MP", "FG", "FGA", "FGPCT", 
-                    "3PM","3PA", "3PPCT","2PM", "2PA", "2PPCT", "FT", 
-                    "FTA", "FTPCT", "ORB", "DRB", "TRB", "AST", "STL", 
-                    "BLK", "TOV", "PF", "PTS", "Year", "Playoff")
+                    "threePM","threePA", "threePPCT","twoPM", "twoPA", 
+                    "twoPPCT", "FT", "FTA", "FTPCT", "ORB", "DRB", 
+                    "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS", 
+                    "Year", "Playoff")
 colnames(data)
 ```
 <hr>
@@ -118,13 +119,13 @@ colnames(data)
 ```{r, warning=FALSE, message=FALSE}
 library(dplyr)
 shooting_data <- select(data, Team, G, MP, FG, FGA, FGPCT, 
-                        "3PM","3PA", "3PPCT", "2PM", "2PA", "2PPCT", FT,
-                        FTA, FTPCT, PTS, Year, Playoff)
+                        threePM, threePA, threePPCT, twoPM, twoPA, 
+                        twoPPCT, FT, FTA, FTPCT, PTS, Year, Playoff)
 head(shooting_data)
 
-hustle_data <- select(data, -FG, -FGA, -FGPCT, -"3PM", -"3PA", -"3PPCT",
-                      -"2PM", -"2PA", -"2PPCT", -FT, -FTA, -"FTPCT",
-                      -PTS)
+hustle_data <- select(data, -FG, -FGA, -FGPCT, -threePM, -threePA, 
+                      -threePPCT, -twoPM, -twoPA, -twoPPCT, -FT, -FTA, 
+                      -FTPCT, -PTS)
 head(hustle_data)
 ```
 <hr>
@@ -143,7 +144,7 @@ head(playoff_data)
 
 #### Mutate columns together or use mathematical operations to create a new variable
 ```{r, warning=FALSE, message=FALSE}
-EFGPCT_data <- mutate(data, "EFGPCT" = round(((data[[11]] + (1.5*data[[8]]))/(data[[6]])), digits = 3)*100)
+EFGPCT_data <- mutate(data, "EFGPCT" = round(((twoPM + (1.5*threePM))/(FGA)), digits = 3)*100)
 head(EFGPCT_data[,c(2,7,28)])
 
 a_to_ratio <- mutate(data, "Assist/Turnover" = ifelse(TOV == 0, AST, round(AST/TOV, digits = 2)))
@@ -161,7 +162,12 @@ head(a_to_ratio[,c(2,20,23,28)])
 ```{r, warning=FALSE, message=FALSE}
 library(tree)
 
-playoff_tree <- tree(Playoff ~ data[4:25], data)
+num.data <- select(data, -Rank, -Team, -G, -MP, -Year)
+
+playoff.tree <- tree(as.factor(Playoff) ~ ., num.data)
+summary(playoff.tree)
+plot(playoff.tree)
+text(playoff.tree, pretty = 0)
 ```
 
 
