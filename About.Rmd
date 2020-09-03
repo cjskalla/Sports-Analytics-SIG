@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 <style>
   .img-title {
   float: right;
@@ -144,6 +149,21 @@ head(EFGPCT_data[,c(2,7,28)])
 a_to_ratio <- mutate(data, "Assist/Turnover" = ifelse(TOV == 0, AST, round(AST/TOV, digits = 2)))
 head(a_to_ratio[,c(2,20,23,28)])
 ```
+<hr>
+
+### Creating Visualizations off the data
+```{r, warning=FALSE, message=FALSE}
+
+```
+<hr>
+
+### Building a Random Forest to classify playoff teams
+```{r, warning=FALSE, message=FALSE}
+library(tree)
+
+playoff_tree <- tree(Playoff ~ data[4:25], data)
+```
+
 
   </section>
   
