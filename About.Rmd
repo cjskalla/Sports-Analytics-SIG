@@ -1,0 +1,171 @@
+<style>
+  .img-title {
+  float: right;
+  width: 25%;
+  height: auto;
+  border-radius: 10%;
+  }
+  
+  .h-title {
+  font-size: 5rem;
+  fot-weight; bold;
+  }
+
+  .list-leaders {
+  line-height: 2;
+  }
+  
+  .list-objectives {
+  line-height: 2;
+  }
+  
+</style>
+
+   
+   <section>
+    <img class='img-title' src="https://pbs.twimg.com/profile_images/1299407856064589824/emM3pOCZ_400x400.jpg"/>
+    <h1 class='h-title'> Sports Analytics SIG </h1>
+  </section>
+
+  <section>
+  
+> **About myself** 
+    
+    <ul class='list-leaders'>
+      <li> Calvin Skalla 
+      <ul>
+      <li> Senior; majoring in Mathematics and Statistics </li>
+      <li> Head Manager of the Iowa Women's Basketball Team </li>
+      <li> Checkout my <a href="https://cjskalla.github.io/"> personal website </a> for more info! </li>
+      </li>
+      </ul>
+    </ul>
+<hr>
+  </section>
+
+  <section>
+  
+> **Objectives**
+    
+    <ul class='list-objectives'>
+      <li> Learn how to import and manipulate data 
+      <ul>
+      <li> Using dplyr in R, reshape and transform the data </li>
+      <li> Aggregate and summarize data </li>
+      </li>
+      </ul>
+<hr>    
+      <li> Learn how to visualize data for beneficial insights
+      <ul>
+      <li> Using ggplot in R, create different plots </li>
+      <li> Scatterplots, boxplots, density functions, etc. </li>
+      </li>
+      </ul>
+<hr>  
+      <li> Learn how to model data for prediction and classification
+      <ul>
+      <li> Using different statistical and machine learning techniques </li>
+      <li> Linear Regression, Logistic Regression, KNN, etc. </li>
+      </li>
+      </ul>
+<hr>       
+    </ul>
+  </section>
+  
+  <section>
+  
+> **Examples**
+
+### Reading data into R
+```{r, warning=FALSE, message=FALSE}
+#Reading in data downloaded onto your local drive
+#This code will not work unless you place the comma separated file within the same folder as this about.rmd is in
+data <- read.csv("Basketball Analytics/playoffs.csv")
+head(data)
+```
+<hr>
+
+### Looking at the structure of our data set
+```{r, warning=FALSE, message=FALSE}
+dim(data)
+colnames(data)
+
+#Replace Column names with easier keys
+colnames(data) <- c("Rank", "Team", "G", "MP", "FG", "FGA", "FGPCT", 
+                    "3PM","3PA", "3PPCT","2PM", "2PA", "2PPCT", "FT", 
+                    "FTA", "FTPCT", "ORB", "DRB", "TRB", "AST", "STL", 
+                    "BLK", "TOV", "PF", "PTS", "Year", "Playoff")
+colnames(data)
+```
+<hr>
+
+### Using `dplyr` to transform the data
+##### These functions listed below are the main verbs used out of dplyr
+
+  * [`select`](https://dplyr.tidyverse.org/reference/select.html) --
+    pick variables by their names
+  * [`filter`](https://dplyr.tidyverse.org/reference/filter.html) --
+    choose rows that satisfy some criteria
+  * [`mutate`](https://dplyr.tidyverse.org/reference/mutate.html) --
+    create transformed or derived variables
+
+#### Selecting certain columns of the data set
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+shooting_data <- select(data, Team, G, MP, FG, FGA, FGPCT, 
+                        "3PM","3PA", "3PPCT", "2PM", "2PA", "2PPCT", FT,
+                        FTA, FTPCT, PTS, Year, Playoff)
+head(shooting_data)
+
+hustle_data <- select(data, -FG, -FGA, -FGPCT, -"3PM", -"3PA", -"3PPCT",
+                      -"2PM", -"2PA", -"2PPCT", -FT, -FTA, -"FTPCT",
+                      -PTS)
+head(hustle_data)
+```
+<hr>
+
+#### Filtering out values that do not meet a threshold
+```{r, warning=FALSE, message=FALSE}
+#Filtering the data to work with years starting in the 2000s
+new_data <- filter(data, Year >= 2000)
+head(new_data)
+
+#Working with the teams' data that made the playoffs that year
+playoff_data <- filter(data, Playoff == 1)
+head(playoff_data)
+```
+<hr>
+
+#### Mutate columns together or use mathematical operations to create a new variable
+```{r, warning=FALSE, message=FALSE}
+EFGPCT_data <- mutate(data, "EFGPCT" = round(((data[[11]] + (1.5*data[[8]]))/(data[[6]])), digits = 3)*100)
+head(EFGPCT_data[,c(2,7,28)])
+
+a_to_ratio <- mutate(data, "Assist/Turnover" = ifelse(TOV == 0, AST, round(AST/TOV, digits = 2)))
+head(a_to_ratio[,c(2,20,23,28)])
+```
+
+  </section>
+  
+  <section>
+  
+> **Textbooks for Reference**
+
+    <ol class='list-textbooks'>
+      <li> Ulf Brefeld, Jesse Davis, Jan Van Haaren, Albrecht Zimmermann.: Machine Learning and Data Mining for Sports Analytics. <i>Springer</i>, https://link-springer-com.proxy.lib.uiowa.edu/book/10.1007/978-3-030-17274-9#editorsandaffiliations
+      </li>
+<hr>    
+      <li> Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani.: An Introduction to Statistical Learning. <i>Springer</i>, https://link-springer-com.proxy.lib.uiowa.edu/book/10.1007/978-1-4614-7138-7#about
+      </li>
+<hr>    
+      <li> Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani.: An Introduction to Statistical Learning. <i>Springer</i>, https://link-springer-com.proxy.lib.uiowa.edu/book/10.1007/978-1-4614-7138-7#about
+      </li>
+<hr>    
+      <li> Tom Barker.: Pro Data Visualization using R and JavaScript. <i>Springer</i>, https://link-springer-com.proxy.lib.uiowa.edu/book/10.1007/978-1-4302-5807-0
+      </li>
+<hr>    
+      <li> Ossama Embarak.: Data Analysis and Visualization Using Python. <i>Springer</i>, https://link-springer-com.proxy.lib.uiowa.edu/book/10.1007/978-1-4842-4109-7
+      </li>      
+    </ol>
+<hr>
+  </section>
