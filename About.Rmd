@@ -57,8 +57,8 @@ editor_options:
     <ul class='list-objectives'>
       <li> Learn how to import and manipulate data 
       <ul>
+      <li> Import data into R from the internet or an excel file on your device  </li>
       <li> Using dplyr in R, reshape and transform the data </li>
-      <li> Aggregate and summarize data </li>
       </li>
       </ul>
 <hr>    
@@ -86,7 +86,6 @@ editor_options:
 ### Reading data into R
 ```{r, warning=FALSE, message=FALSE}
 #Reading in data downloaded onto your local drive
-#This code will not work unless you place the comma separated file within the same folder as this about.rmd is in
 data <- read.csv("Basketball Data/playoffs.csv")
 head(data)
 ```
@@ -94,6 +93,7 @@ head(data)
 
 ### Looking at the structure of our data set
 ```{r, warning=FALSE, message=FALSE}
+#Dim gives us the dimension of our dataset in rows by columns
 dim(data)
 colnames(data)
 
@@ -120,37 +120,57 @@ colnames(data)
 #### Selecting certain columns of the data set
 ```{r, warning=FALSE, message=FALSE}
 library(dplyr)
-shooting_data <- select(data, Team, G, MP, FG, FGA, FGPCT, 
+shooting.data <- select(data, Team, G, MP, FG, FGA, FGPCT, 
                         threePM, threePA, threePPCT, twoPM, twoPA, 
                         twoPPCT, FT, FTA, FTPCT, PTS, Year, Playoff)
-head(shooting_data)
+head(shooting.data)
+```
 
-hustle_data <- select(data, -FG, -FGA, -FGPCT, -threePM, -threePA, 
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+hustle.data <- select(data, -FG, -FGA, -FGPCT, -threePM, -threePA, 
                       -threePPCT, -twoPM, -twoPA, -twoPPCT, -FT, -FTA, 
                       -FTPCT, -PTS)
-head(hustle_data)
 ```
 <hr>
 
 #### Filtering out values that do not meet a threshold
 ```{r, warning=FALSE, message=FALSE}
 #Filtering the data to work with years starting in the 2000s
-new_data <- filter(data, Year >= 2000)
-head(new_data)
+new.data <- filter(data, Year >= 2010)
+head(new.data)
+```
 
+```{r, echo=FALSE}
+new.mid.data <- filter(data, Year %in% range(2000:2009))
+```
+
+```{r, echo=FALSE}
+old.mid.data <- filter(data, Year %in% range(1990:1999))
+```
+
+```{r, echo=FALSE}
+old.data <- filter(data, Year %in% range(1980:1989))
+```
+
+```{r, echo=FALSE}
+num.data <- select(new.data, -Rank, -Team, -G, -MP, -Year)
+```
+
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
 #Working with the teams' data that made the playoffs that year
-playoff_data <- filter(data, Playoff == 1)
-head(playoff_data)
+playoff.data <- filter(data, Playoff == 1)
 ```
 <hr>
 
 #### Mutate columns together or use mathematical operations to create a new variable
 ```{r, warning=FALSE, message=FALSE}
-EFGPCT_data <- mutate(data, "EFGPCT" = round(((twoPM + (1.5*threePM))/(FGA)), digits = 3)*100)
-head(EFGPCT_data[,c(2,7,28)])
+EFGPCT.data <- mutate(data, "EFGPCT" = round(((twoPM + (1.5*threePM))/(FGA)), digits = 3)*100)
+head(EFGPCT.data[,c(2,7,28)])
 
-a_to_ratio <- mutate(data, "Assist/Turnover" = ifelse(TOV == 0, AST, round(AST/TOV, digits = 2)))
-head(a_to_ratio[,c(2,20,23,28)])
+a.to.ratio <- mutate(data, "Assist/Turnover" = ifelse(TOV == 0, AST, round(AST/TOV, digits = 2)))
+head(a.to.ratio[,c(2,20,23,28)])
 ```
 <hr>
 
@@ -160,17 +180,120 @@ head(a_to_ratio[,c(2,20,23,28)])
 ```
 <hr>
 
-### Using different Machine Learning Techniques to classify playoff teams
+### Using Machine Learning Techniques to classify playoff teams
+#### Using a Regression technique to predict points per game
+```{r, warning=FALSE, message=FALSE}
+library(car)
+ppg.fit <- lm(PTS ~ ., data = num.data)
+summary(ppg.fit)
+```
+
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+model_equation <- function(model, ...) {
+  format_args <- list(...)
+  
+  model_coeff <- model$coefficients
+  format_args$x <- abs(model$coefficients)
+  model_coeff_sign <- sign(model_coeff)
+  model_coeff_prefix <- case_when(model_coeff_sign == -1 ~ " - ",
+                                  model_coeff_sign == 1 ~ " + ",
+                                  model_coeff_sign == 0 ~ " + ")
+  model_eqn <- paste(strsplit(as.character(model$call$formula), "~")[[2]], # 'y'
+                     "=",
+                     paste(if_else(model_coeff[1]<0, "- ", ""),
+                           do.call(format, format_args)[1],
+                           paste(model_coeff_prefix[-1],
+                                 do.call(format, format_args)[-1],
+                                 " * ",
+                                 names(model_coeff[-1]),
+                                 sep = "", collapse = ""),
+                           sep = ""))
+  return(model_eqn)
+}
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+ppg.fit2 <- lm(PTS ~ FG + FGA + FGPCT + threePM + FT, data = num.data)
+summary(ppg.fit2)
+model_equation(ppg.fit2, digits = 2)
+```
+<hr>
+
+#### Building a Logistic Regression Model to classify playoff teams
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+
+playoff.lr <- glm(Playoff ~ FT, family = "binomial", data = num.data)
+summary(playoff.lr)
+
+playoff.lr.plot <- ggplot(data = num.data, aes(x = 
+                                              as.numeric(FT), 
+                                              y = Playoff)) +
+  geom_jitter(height = 0.05, width = 0.3, alpha=0.4) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"))
+playoff.lr.plot
+
+```
+<hr>
+
+#### Using KNN to cluster the playoff teams
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+clusters <- num.data %>% select(-Playoff) %>% kmeans(centers = 2)
+#clusters$centers
+
+pca <- num.data %>%
+ select(-Playoff) %>%
+ prcomp
+
+mapped.playoff <- pca %>%
+ predict(num.data)
+
+mapped.centers <- pca %>%
+ predict(clusters$centers)
+
+knn.plot <- mapped.playoff %>% as.data.frame %>%
+ cbind(Playoff = num.data$Playoff,
+ Clusters = as.factor(clusters$cluster)) %>%
+ ggplot() +
+ geom_point(aes(x = PC1, y = PC2,
+ colour = as.factor(Playoff), shape = Clusters)) +
+ geom_point(aes(x = PC1, y = PC2),
+ size = 5, shape = "X",
+ data = as.data.frame(mapped.centers))
+```
+<hr>
+
+#### Using Principal Component Analysis to reduce the dimension of our data
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+pca <- num.data %>% select(-Playoff) %>%  prcomp
+
+mapped.playoff <- pca %>% predict(num.data)
+pca.plot <- mapped.playoff %>%
+ as.data.frame %>%
+ cbind(Playoff = num.data$Playoff) %>%
+ ggplot() +
+ geom_point(aes(x = PC1, y = PC2, colour = as.factor(Playoff)))
+```
+<hr>
+
+#### Building a Tree to classify playoff teams
+```{r, warning=FALSE, message=FALSE}
+library(party)
+
+playoff.tree <- ctree(as.factor(Playoff) ~ ., num.data)
+plot(playoff.tree)
+```
+<hr>
+
 #### Building a Random Forest to classify playoff teams
 ```{r, warning=FALSE, message=FALSE}
-library(tree)
+library(tidyverse)
+library(randomForest)
 
-num.data <- select(data, -Rank, -Team, -G, -MP, -Year)
-
-playoff.tree <- tree(as.factor(Playoff) ~ ., num.data)
-summary(playoff.tree)
-plot(playoff.tree)
-text(playoff.tree, pretty = 0)
+playoff.forest <- randomForest(as.factor(Playoff) ~ ., num.data)
+table(num.data$Playoff, predict(playoff.forest, num.data))
 ```
 <hr>
 
@@ -178,7 +301,7 @@ text(playoff.tree, pretty = 0)
 ```{r, warning=FALSE, message=FALSE}
 library(e1071)
 
-svm.data <- select(num.data, Playoff, twoPPCT, TOV) %>% filter() 
+svm.data <- select(num.data, Playoff, FGPCT, threePM) %>% filter() 
 playoff.svm = svm(as.factor(Playoff) ∼., svm.data, kernel ="linear", cost=10,
 scale=FALSE)
 plot(playoff.svm, svm.data)
