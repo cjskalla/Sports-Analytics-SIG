@@ -93,8 +93,9 @@ head(data)
 
 ### Looking at the structure of our data set
 ```{r, warning=FALSE, message=FALSE}
-#Dim gives us the dimension of our dataset in rows by columns
-dim(data)
+dim(data) ; #This tells us we have 1104 observations with 27 features explaining them
+
+
 colnames(data)
 
 #Replace Column names with easier keys
