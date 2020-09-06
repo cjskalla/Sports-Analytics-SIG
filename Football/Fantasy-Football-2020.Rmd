@@ -1,0 +1,68 @@
+---
+title: "Fantasy Football 2020"
+author: "Calvin Skalla"
+date: "9/5/2020"
+output: html_document
+---
+
+# Reading in Data
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+
+#Reading in the Data, selecting wanted columns, and creating stats for a non-PPR league
+qb.data <- read.csv("Data/qb_stats_and_projections.csv") %>% 
+  select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.FPTS, X2020.FPTS) %>% arrange(-X2020.FPTS)
+
+rb.data <- read.csv("Data/rb_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
+
+wr.data <- read.csv("Data/wr_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM, POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
+
+te.data <- read.csv("Data/te_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
+
+de.data <- read.csv("Data/defense_stats_and_projections.csv") %>% 
+  select(TEAM.NAME, X2019.FPTS, X2020.FPTS) %>% mutate(PLAYER.NAME = TEAM.NAME, POSITION = "D") %>% arrange(-X2020.FPTS)
+de.data <- de.data[1:16, c(4, 1, 5, 2, 3)]
+
+rb.data <- select(rb.data, -X2019.REC, -X2020.REC)
+wr.data <- select(wr.data, -X2019.REC, -X2020.REC)
+te.data <- select(te.data, -X2019.REC, -X2020.REC)
+
+colnames(qb.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
+colnames(rb.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
+colnames(wr.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
+colnames(te.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
+colnames(de.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
+
+full.data <- bind_rows(qb.data, rb.data, wr.data, te.data, de.data) %>% arrange(-EXP.POINTS.2020) %>% filter(EXP.POINTS.2020 >= 50)
+```
+
+# Plots
+```{r, warning=FALSE, message=FALSE}
+above.fifty <- full.data %>% group_by(POSITION) %>% summarise(AMOUNT = n()) %>% arrange(-AMOUNT)
+
+pos.plot <- ggplot(above.fifty, aes(fct_rev(fct_reorder(POSITION, -AMOUNT)),AMOUNT)) + geom_bar(stat = "identity") + coord_flip()
+pos.plot
+
+qb.plot <- ggplot(qb.data[1:36,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+qb.plot
+
+first.rb.plot <- ggplot(rb.data[1:33,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+first.rb.plot
+
+second.rb.plot <- ggplot(rb.data[34:67,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020), xlim = c(0, 250)) + geom_bar(stat = "identity") + coord_flip()
+second.rb.plot
+
+first.wr.plot <- ggplot(wr.data[1:45,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+first.wr.plot
+
+sec.wr.plot <- ggplot(wr.data[46:92,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+sec.wr.plot
+
+te.plot <- ggplot(te.data[1:33,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+te.plot
+
+de.plot <- ggplot(de.data[1:16,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
+de.plot
+```

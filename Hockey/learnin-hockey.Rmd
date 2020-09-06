@@ -1,0 +1,14 @@
+---
+title: "Hockey Data"
+author: "Calvin Skalla"
+date: "9/5/2020"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+data <- read.csv("Hockey Data/nhl.csv")
+
+playoff.data <- mutate(data, playoff = ifelse(playoff %in% c("CQF", "SF", "SC", "F", "DSF"), 1, 0))
+```
+
