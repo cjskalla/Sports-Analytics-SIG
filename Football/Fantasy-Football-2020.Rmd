@@ -4,6 +4,8 @@ author: "Calvin Skalla"
 date: "9/5/2020"
 output: html_document
 ---
+Dak Prescott rounds 4-5
+Russell Wilson rounds 5-6
 
 # Reading in Data
 ```{r, warning=FALSE, message=FALSE}
@@ -16,9 +18,9 @@ library(kableExtra)
 qb.data <- read.csv("Data/qb_stats_and_projections.csv") %>% 
   select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.FPTS, X2020.FPTS) %>% arrange(-X2020.FPTS)
 
-rb.data <- read.csv("Data/rb_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
+rb.data <- read.csv("Data/rb_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS) %>% filter(X2020.FPTS >= 50)
 
-wr.data <- read.csv("Data/wr_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM, POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
+wr.data <- read.csv("Data/wr_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM, POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS) %>% filter(X2020.FPTS >= 50)
 
 te.data <- read.csv("Data/te_stats_and_projections.csv") %>% select(PLAYER.NAME, TEAM.NAME, PLAYER.POSITION, X2019.REC, X2019.FPTS, X2020.REC, X2020.FPTS) %>% mutate(X2019.FPTS = X2019.FPTS - X2019.REC, X2020.FPTS = X2020.FPTS - X2020.REC) %>% arrange(-X2020.FPTS)
 
@@ -36,7 +38,7 @@ colnames(wr.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "E
 colnames(te.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
 colnames(de.data) <- c("PLAYER.NAME", "TEAM.NAME", "POSITION", "POINTS.2019", "EXP.POINTS.2020")
 
-full.data <- bind_rows(qb.data, rb.data, wr.data, te.data, de.data) %>% arrange(-EXP.POINTS.2020) %>% filter(EXP.POINTS.2020 >= 50)
+full.data <- bind_rows(rb.data, wr.data, te.data) %>% arrange(-EXP.POINTS.2020) %>% filter(EXP.POINTS.2020 >= 50)
 ```
 
 # Plots
@@ -109,5 +111,10 @@ recap.2018 <- data.frame("Round" = 1:12, "QB" = c(0, 1, 0, 2, 2, 1, 1, 1, 3, 3, 
 ```{r, warning=FALSE, message=FALSE}
 recap.2019.table <-  kbl(recap.2019) %>% kable_styling(bootstrap_options = c("striped", "hover"))
 recap.2019.table
+```
+
+```{r, warning=FALSE, message=FALSE}
+recap.2018.table <-  kbl(recap.2018) %>% kable_styling(bootstrap_options = c("striped", "hover"))
+recap.2018.table
 ```
 
