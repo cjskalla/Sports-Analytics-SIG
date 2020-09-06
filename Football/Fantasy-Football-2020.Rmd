@@ -10,6 +10,7 @@ output: html_document
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
+library(kableExtra)
 
 #Reading in the Data, selecting wanted columns, and creating stats for a non-PPR league
 qb.data <- read.csv("Data/qb_stats_and_projections.csv") %>% 
@@ -39,30 +40,74 @@ full.data <- bind_rows(qb.data, rb.data, wr.data, te.data, de.data) %>% arrange(
 ```
 
 # Plots
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
 above.fifty <- full.data %>% group_by(POSITION) %>% summarise(AMOUNT = n()) %>% arrange(-AMOUNT)
 
 pos.plot <- ggplot(above.fifty, aes(fct_rev(fct_reorder(POSITION, -AMOUNT)),AMOUNT)) + geom_bar(stat = "identity") + coord_flip()
 pos.plot
 
 qb.plot <- ggplot(qb.data[1:36,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-qb.plot
+#qb.plot
 
 first.rb.plot <- ggplot(rb.data[1:33,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-first.rb.plot
+#first.rb.plot
 
 second.rb.plot <- ggplot(rb.data[34:67,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020), xlim = c(0, 250)) + geom_bar(stat = "identity") + coord_flip()
-second.rb.plot
+#second.rb.plot
 
 first.wr.plot <- ggplot(wr.data[1:45,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-first.wr.plot
+#first.wr.plot
 
 sec.wr.plot <- ggplot(wr.data[46:92,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-sec.wr.plot
+#sec.wr.plot
 
 te.plot <- ggplot(te.data[1:33,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-te.plot
+#te.plot
 
 de.plot <- ggplot(de.data[1:16,], aes(fct_rev(fct_reorder(PLAYER.NAME, -EXP.POINTS.2020)), EXP.POINTS.2020)) + geom_bar(stat = "identity") + coord_flip()
-de.plot
+#de.plot
 ```
+
+
+```{r, warning=FALSE, message=FALSE}
+scaled.qb <- as.data.frame(lapply(qb.data, function(x) if(is.numeric(x)){
+                     scale(x, center=TRUE, scale=TRUE)
+                      } else x))
+scaled.rb <- as.data.frame(lapply(rb.data, function(x) if(is.numeric(x)){
+                     scale(x, center=TRUE, scale=TRUE)
+                      } else x))
+scaled.wr <- as.data.frame(lapply(wr.data, function(x) if(is.numeric(x)){
+                     scale(x, center=TRUE, scale=TRUE)
+                      } else x))
+scaled.te <- as.data.frame(lapply(te.data, function(x) if(is.numeric(x)){
+                     scale(x, center=TRUE, scale=TRUE)
+                      } else x))
+scaled.de <- as.data.frame(lapply(de.data, function(x) if(is.numeric(x)){
+                     scale(x, center=TRUE, scale=TRUE)
+                      } else x))
+
+
+summary(scaled.qb[1:36,]$EXP.POINTS.2020) ; sd(scaled.qb[1:36,]$EXP.POINTS.2020)
+
+summary(scaled.rb[1:67,]$EXP.POINTS.2020) ; sd(scaled.rb[1:67,]$EXP.POINTS.2020)
+
+summary(scaled.wr[1:92,]$EXP.POINTS.2020) ; sd(scaled.wr[1:92,]$EXP.POINTS.2020)
+
+summary(scaled.te[1:33,]$EXP.POINTS.2020) ; sd(scaled.te[1:33,]$EXP.POINTS.2020)
+
+summary(scaled.de[1:16,]$EXP.POINTS.2020) ; sd(scaled.de[1:16,]$EXP.POINTS.2020)
+```
+<hr>
+
+#Draft Recaps
+```{r, warning=FALSE, message=FALSE}
+recap.2019 <- data.frame("Round" = 1:12, "QB" = c(0, 1, 0, 1, 2, 1, 3, 1, 0, 3, 5, 1), "RB" = c(10, 3, 7, 3, 6, 4, 1, 5, 3, 4, 3, 2), "WR" = c(2, 7, 4, 7, 3, 5, 6, 5, 7, 3, 3, 4), "TE" = c(0, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 3))
+
+recap.2018 <- data.frame("Round" = 1:12, "QB" = c(0, 1, 0, 2, 2, 1, 1, 1, 3, 3, 0, 2), "RB" = c(10, 3, 3, 6, 3, 3, 3, 5, 2, 4, 3, 3), "WR" = c(2, 6, 8, 4, 5, 6, 4, 5, 6, 4, 4, 3), "TE" = c(0, 1, 1, 0, 2, 2, 3, 1, 0, 0, 3, 1))
+```
+
+```{r, warning=FALSE, message=FALSE}
+recap.2019.table <-  kbl(recap.2019) %>% kable_styling(bootstrap_options = c("striped", "hover"))
+recap.2019.table
+```
+
